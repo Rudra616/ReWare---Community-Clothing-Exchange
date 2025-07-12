@@ -212,7 +212,7 @@ def add_item(request):
 
 @login_required
 def user_dashboard(request):
-    my_items = Item.objects.filter(uploaded_by=request.user)
+    my_items = Item.objects.filter(owner=request.user)
     sent_swaps = Swap.objects.filter(user=request.user)
     received_swaps = Swap.objects.filter(item__owner=request.user)
 
