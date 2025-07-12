@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Add New Item</h2>
+  <form id="addItemForm" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="title" class="form-label">Title</label>
+      <input type="text" class="form-control" id="title" name="title" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label">Description</label>
+      <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="category" class="form-label">Category</label>
+      <select class="form-select" id="category" name="category" required>
+        <option value="">Select category</option>
+        {% for value, label in category_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="size" class="form-label">Size</label>
+      <input type="text" class="form-control" id="size" name="size" placeholder="e.g., S, M, L, XL or numeric" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="condition" class="form-label">Condition</label>
+      <select class="form-select" id="condition" name="condition" required>
+        <option value="">Select condition</option>
+        {% for value, label in condition_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="image" class="form-label">Image</label>
+      <input class="form-control" type="file" id="image" name="image" accept="image/*" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Item</button>
+  </form>
+
+  <div id="responseMessage" class="mt-3"></div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  $('#addItemForm').submit(function(e) {
+    e.preventDefault();
+    let formData = new FormData(this);
+
+    $.ajax({
+      url: "{% url 'add_item' %}",
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      success: function(response) {
+        let msgDiv = $('#responseMessage');
+        if(response.success) {
+          msgDiv.html('<div class="alert alert-success">' + response.message + '</div>');
+          $('#addItemForm')[0].reset();
+        } else {
+          msgDiv.html('<div class="alert alert-danger">' + response.message + '</div>');
+        }
+      },
+      error: function() {
+        $('#responseMessage').html('<div class="alert alert-danger">Error occurred while adding item.</div>');
+      }
+    });
+  });
+</script>
+{% endblock %}

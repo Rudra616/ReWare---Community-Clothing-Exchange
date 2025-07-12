@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Items - ReWear{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Browse Available Items</h2>
+
+<div id="items-container" class="row g-4">
+    {% include 'partials/items_list.html' %}
+</div>
+
+<div class="text-center mt-4">
+    <button id="loadMoreBtn" class="btn btn-primary">Load More</button>
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  let currentPage = 1;
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  const itemsContainer = document.getElementById('items-container');
+
+  loadMoreBtn.addEventListener('click', () => {
+    currentPage++;
+    fetch(`{% url 'browse_items' %}?page=${currentPage}`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.html.trim() === '') {
+          loadMoreBtn.disabled = true;
+          loadMoreBtn.textContent = 'No more items';
+          return;
+        }
+        itemsContainer.insertAdjacentHTML('beforeend', data.html);
+        if (!data.has_next) {
+          loadMoreBtn.disabled = true;
+          loadMoreBtn.textContent = 'No more items';
+        }
+      })
+      .catch(err => {
+        console.error('Error loading more items:', err);
+      });
+  });
+</script>
+{% endblock %}

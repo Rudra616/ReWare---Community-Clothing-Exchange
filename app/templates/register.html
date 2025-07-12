@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+<style>
+  .alert {
+    margin-top: 1rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">Register</h2>
+  <form id="registerForm" method="POST" enctype="multipart/form-data" action="{% url 'register' %}">
+    {% csrf_token %}
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label>First Name*</label>
+        <input type="text" name="firstname" class="form-control" required />
+      </div>
+      <div class="col-md-6 mb-3">
+        <label>Last Name*</label>
+        <input type="text" name="lastname" class="form-control" required />
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label>Username*</label>
+      <input type="text" name="username" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+      <label>Password*</label>
+      <input type="password" name="password" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+      <label>Email*</label>
+      <input type="email" name="email" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+      <label>Phone Number*</label>
+      <input type="text" name="number" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+      <label>Address*</label>
+      <input type="text" name="address" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+      <label>Bio</label>
+      <textarea name="bio" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label>Date of Birth*</label>
+      <input type="date" name="date_of_birth" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+      <label>Profile Image</label>
+      <input type="file" name="profile_image" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Register</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function isFormValid() {
+  const requiredFields = ["firstname", "lastname", "username", "password", "email", "number", "address", "state", "district", "date_of_birth"];
+  for (const field of requiredFields) {
+    const input = document.querySelector(`[name="${field}"]`);
+    if (!input || input.value.trim() === "") {
+      alert(`Please fill in ${field.replace("_", " ")}.`);
+      return false;
+    }
+  }
+  return true;
+}
+
+function showLoader() {
+  // Add your loader logic here if needed
+}
+
+function hideLoader() {
+  // Add your loader logic here if needed
+}
+
+document.getElementById("registerForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const form = this;
+
+  if (!isFormValid()) return;
+  showLoader();
+
+  const formData = new FormData(form);
+  const csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+
+  fetch(form.action || window.location.href, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": csrfToken,
+      "X-Requested-With": "XMLHttpRequest"
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    document.querySelectorAll(".alert").forEach(el => el.remove());
+
+    const alertBox = document.createElement("div");
+    alertBox.classList.add("alert", data.success ? "alert-success" : "alert-danger");
+    alertBox.innerText = data.message || data.error;
+
+    form.insertAdjacentElement("beforebegin", alertBox);
+
+    if (data.success) {
+      form.reset();
+      document.getElementById("district").innerHTML = '<option value="">-- Select District --</option>';
+    }
+
+    hideLoader();
+  })
+  .catch(error => {
+    console.error("Error submitting form:", error);
+    alert("An error occurred. Please try again.");
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Login - My Project{% endblock %}
+
+{% block content %}
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-4">
+    <form method="POST" id="loginInfo" onsubmit="return required();">
+      {% csrf_token %}
+
+      {% if error3 %}
+      <div class="alert alert-warning" role="alert">
+        <strong>Warning: </strong>{{ error3 }}
+      </div>
+      {% endif %}
+      {% if error %}
+      <div class="alert alert-danger" role="alert">
+        <strong>Error: </strong>{{ error }}
+      </div>
+      {% endif %}
+      {% if error1 %}
+      <div class="alert alert-danger" role="alert">
+        <strong>Error: </strong>{{ error1 }}
+      </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="name" class="form-label">Username</label>
+        <input
+          type="text"
+          class="form-control"
+          id="name"
+          name="name"
+          aria-describedby="usernameHelp"
+          required
+        />
+        <small class="error text-danger"></small>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          name="password"
+          required
+        />
+        <small class="error text-danger"></small>
+      </div>
+
+      <div class="mb-3">
+        <label for="captcha" class="form-label">Enter captcha</label>
+        <div class="d-flex align-items-center mb-2">
+          <div
+            class="cpatchur text-center me-2 p-2 fs-5 fw-bold bg-light border rounded"
+          >
+            {{ captcha_code }}
+          </div>
+          <button
+            type="button"
+            class="btn btn-secondary btn-sm"
+            onclick="refreshCaptcha(this)"
+            data-url="{% url 'refresh_captcha' %}"
+          >
+            ↻
+          </button>
+        </div>
+        <input
+          type="text"
+          class="form-control"
+          id="captcha"
+          name="captcha"
+          placeholder="Enter captcha here"
+          required
+        />
+        <small class="error text-danger"></small>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Submit</button>
+    </form>
+
+    <div class="text-center mt-3">
+      <a href="{% url 'forgot_password' %}" class="btn btn-link" id="forget">
+        <u>Forget password</u>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function refreshCaptcha(button) {
+    const url = button.dataset.url;
+    fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin' // ✅ Important for CSRF/session handling
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.querySelector('.cpatchur').textContent = data.captcha_code;
+    })
+    .catch(error => {
+        console.error('Error refreshing captcha:', error);
+    });
+}
+
+function required() {
+  let isValid = true;
+  const errors = document.querySelectorAll(".error");
+
+  // Clear all errors first
+  errors.forEach((el) => (el.innerText = ""));
+
+  const name = document.getElementById("name").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const captcha = document.getElementById("captcha").value.trim();
+
+  if (!name) {
+    errors[0].innerText = "This field is required";
+    isValid = false;
+  }
+  if (!password) {
+    errors[1].innerText = "This field is required";
+    isValid = false;
+  }
+  if (!captcha) {
+    errors[2].innerText = "This field is required";
+    isValid = false;
+  }
+
+  return isValid;
+}
+</script>
+{% endblock %}

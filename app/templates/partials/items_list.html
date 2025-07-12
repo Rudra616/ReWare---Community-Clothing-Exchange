@@ -1,0 +1,12 @@
+{% for item in page_obj.object_list %}
+<div class="col-md-3">
+    <div class="card h-100">
+        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.title }}">
+        <div class="card-body">
+            <h5 class="card-title">{{ item.title }}</h5>
+            <p class="card-text">{{ item.description|truncatewords:10 }}</p>
+            <a href="{% url 'item_detail' item.id %}" class="btn btn-sm btn-outline-primary">View</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
